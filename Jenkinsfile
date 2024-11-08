@@ -4,8 +4,8 @@ pipeline {
     tools {
         // Automatically install tools that are configured in Jenkins
         maven 'Maven 3.9.3'   // Make sure Maven is installed in Jenkins
-        jdk 'JDK 11'          // Ensure JDK 11 is configured in Jenkins (or the appropriate version)
-        terraform 'Terraform 1.5.0' // Ensure Terraform is configured in Jenkins
+        jdk 'JDK 17'          //7Ensure JDK 11 is configured in Jenkins (or the appropriate version)
+        terraform 'Terraform 1.8.5' // Ensure Terraform is configured in Jenkins
     }
 
     environment {
