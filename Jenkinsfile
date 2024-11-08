@@ -1,51 +1,86 @@
 pipeline {
     agent any
-    parameters {
-        string(name: 'maven_version', defaultValue: '3.9.3', description: 'Pass the version of Maven')
-        string(name: 'terraform_version', defaultValue: '1.8.5', description: 'Pass the version of Terraform')
-        string(name: 'java_version', defaultValue: '17.0.3', description: 'Pass the version of Java') // Parameter for Java version
+
+    tools {
+        // Automatically install tools that are configured in Jenkins
+        maven 'Maven 3.9.3'   // Make sure Maven is installed in Jenkins
+        jdk 'JDK 11'          // Ensure JDK 11 is configured in Jenkins (or the appropriate version)
+        terraform 'Terraform 1.5.0' // Ensure Terraform is configured in Jenkins
     }
+
+    environment {
+        // Any environment variables can be defined here
+        MAVEN_HOME = tool name: 'Maven 3.9.3', type: 'ToolLocation'
+        JAVA_HOME = tool name: 'JDK 11', type: 'ToolLocation'
+        TERRAFORM_HOME = tool name: 'Terraform 1.5.0', type: 'ToolLocation'
+    }
+
+    parameters {
+        string(name: 'BRANCH', defaultValue: 'main', description: 'Branch to checkout')
+        string(name: 'ENVIRONMENT', defaultValue: 'dev', description: 'Target Environment (dev, staging, prod)')
+    }
+
     stages {
-        stage('Download Maven') {
+        stage('Checkout SCM') {
             steps {
                 script {
-                    def mavenUrl = "https://dlcdn.apache.org/maven/maven-3/${params.maven_version}/binaries/apache-maven-${params.maven_version}-bin.tar.gz"
-                    sh """
-                    cd /var/lib/jenkins/
-                    sudo wget ${mavenUrl} -O apache-maven-${params.maven_version}-bin.tar.gz
-                    sudo tar -xzf apache-maven-${params.maven_version}-bin.tar.gz
-                    sudo mv apache-maven-${params.maven_version} /opt/maven
-                    sudo rm apache-maven-${params.maven_version}-bin.tar.gz
-                    """
+                    // Checkout the code from the Git repository
+                    checkout scm
                 }
             }
         }
-        stage('Download Terraform') {
+
+        stage('Download Dependencies') {
             steps {
                 script {
-                    def terraformUrl = "https://releases.hashicorp.com/terraform/${params.terraform_version}/terraform_${params.terraform_version}_linux_amd64.zip"
-                    sh """
-                    cd /opt
-                    sudo wget ${terraformUrl} -O terraform_${params.terraform_version}_linux_amd64.zip
-                    sudo unzip terraform_${params.terraform_version}_linux_amd64.zip -d /usr/local/bin/
-                    sudo rm terraform_${params.terraform_version}_linux_amd64.zip
-                    """
+                    // Ensure the necessary tools are installed and available
+                    echo "Using Maven: ${MAVEN_HOME}"
+                    echo "Using Java: ${JAVA_HOME}"
+                    echo "Using Terraform: ${TERRAFORM_HOME}"
                 }
             }
         }
-        stage('Download Java') {
+
+        stage('Build Project') {
             steps {
                 script {
-                    def javaUrl = "https://download.java.net/java/GA/jdk${params.java_version}/binaries/openjdk-${params.java_version}_linux-x64_bin.tar.gz"
-                    sh """
-                    cd /opt
-                    sudo wget ${javaUrl} -O openjdk-${params.java_version}_linux-x64_bin.tar.gz
-                    sudo tar -xzf openjdk-${params.java_version}_linux-x64_bin.tar.gz
-                    sudo mv jdk-${params.java_version} /opt/java
-                    sudo rm openjdk-${params.java_version}_linux-x64_bin.tar.gz
-                    """
+                    // Run Maven to build the project (for example)
+                    sh "${MAVEN_HOME}/bin/mvn clean install -DskipTests"
                 }
             }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                script {
+                    // Run Terraform commands, if applicable
+                    sh "${TERRAFORM_HOME}/bin/terraform init"
+                    sh "${TERRAFORM_HOME}/bin/terraform apply -auto-approve"
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // Example deployment stage (you can modify it as needed)
+                    echo "Deploying to ${params.ENVIRONMENT} environment"
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline completed successfully!"
+        }
+
+        failure {
+            echo "Pipeline failed!"
+        }
+
+        always {
+            cleanWs()  // Clean up the workspace after the job is done
         }
     }
 }
