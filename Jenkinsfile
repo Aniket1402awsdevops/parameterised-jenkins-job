@@ -11,8 +11,8 @@ pipeline {
     environment {
         // Any environment variables can be defined here
         MAVEN_HOME = tool name: 'Maven 3.9.3', type: 'ToolLocation'
-        JAVA_HOME = tool name: 'JDK 11', type: 'ToolLocation'
-        TERRAFORM_HOME = tool name: 'Terraform 1.5.0', type: 'ToolLocation'
+        JAVA_HOME = tool name: 'JDK 17', type: 'ToolLocation'
+        TERRAFORM_HOME = tool name: 'Terraform 1.8.5', type: 'ToolLocation'
     }
 
     parameters {
