@@ -10,7 +10,6 @@ pipeline {
         stage('Download Maven') {
             steps {
                 script {
-                    // Check if the version passed is valid, and adjust URL accordingly
                     sh """
                     echo "Maven version: ${params.maven_version}"
                     cd /var/lib/jenkins/
@@ -23,10 +22,9 @@ pipeline {
         stage('Download Terraform') {
             steps {
                 script {
-                    // Check if the version passed is valid, and adjust URL accordingly
                     sh """
                     echo "Terraform version: ${params.terraform_version}"
-                    cd /opt
+                    cd /var/lib/jenkins/
                     wget https://releases.hashicorp.com/terraform/${params.terraform_version}/terraform_${params.terraform_version}_linux_amd64.zip || { echo "Terraform download failed"; exit 1; }
                     """
                 }
